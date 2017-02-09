@@ -135,7 +135,9 @@ var framework = {
 
 		features.touch = 'ontouchstart' in window;
 
-		if(window.requestAnimationFrame) {
+		// requestAnimationFrame exists doesn't mean cancelAnimationFrame exists too,
+		// so we need check both exists
+		if (window.requestAnimationFrame && window.cancelAnimationFrame) {
 			features.raf = window.requestAnimationFrame;
 			features.caf = window.cancelAnimationFrame;
 		}
@@ -207,14 +209,16 @@ var framework = {
 
 			if(vendor && !features.raf) {
 				vendor = vendor.toLowerCase();
-				features.raf = window[vendor+'RequestAnimationFrame'];
-				if(features.raf) {
-					features.caf = window[vendor+'CancelAnimationFrame'] || 
+
+				// need to make sure raf and caf both can work
+				if (window[vendor+'RequestAnimationFrame'] && (window[vendor+'CancelAnimationFrame'] || window[vendor+'CancelRequestAnimationFrame'])) {
+					features.raf = window[vendor+'RequestAnimationFrame'];
+					features.caf = window[vendor+'CancelAnimationFrame'] ||
 									window[vendor+'CancelRequestAnimationFrame'];
 				}
 			}
 		}
-			
+
 		if(!features.raf) {
 			var lastTime = 0;
 			features.raf = function(fn) {
